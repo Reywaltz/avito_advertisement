@@ -1,14 +1,12 @@
 package log
 
 import (
-	"os"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func initLoggerConfig() zap.Config {
-	if os.Getenv("DEV") == "true" {
+func initLoggerConfig(mode string) zap.Config {
+	if mode == "DEV" {
 		cfg := zap.Config{
 			Level:       zap.NewAtomicLevelAt(zap.DebugLevel),
 			Development: true,

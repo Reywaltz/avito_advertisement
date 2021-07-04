@@ -15,8 +15,8 @@ type Logger interface {
 	Fatalf(pattern string, msg ...interface{})
 }
 
-func NewLogger() (*Log, error) {
-	cfg := initLoggerConfig()
+func NewLogger(mode string) (*Log, error) {
+	cfg := initLoggerConfig(mode)
 	logger, err := cfg.Build()
 	if err != nil {
 		return nil, err
