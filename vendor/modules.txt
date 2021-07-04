@@ -1,5 +1,8 @@
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/google/uuid v1.2.0
+## explicit
+github.com/google/uuid
 # github.com/jackc/chunkreader/v2 v2.0.1
 github.com/jackc/chunkreader/v2
 # github.com/jackc/pgconn v1.8.1
@@ -22,6 +25,9 @@ github.com/jackc/pgx/v4
 github.com/jackc/pgx/v4/internal/sanitize
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc
+## explicit
+github.com/shopspring/decimal
 # github.com/stretchr/testify v1.7.0
 ## explicit
 github.com/stretchr/testify/assert
