@@ -3,6 +3,7 @@ package repositories
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/pashagolub/pgxmock"
 )
 
@@ -21,7 +22,9 @@ func TestAdRepository(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost"})
+	rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost"}).
+		AddRow(uuid.New(), "Индекс", "Очень интересное объявление", []string{"1.jpg, 2.jpg, 3.jpg"}, "500").
+		AddRow(uuid.New(), "Индекс", "Очень интересное объявление", []string{"1.jpg, 2.jpg, 3.jpg"}, "500")
 
 	mock.ExpectQuery(GetAds).WillReturnRows(rows)
 
