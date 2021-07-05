@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/Reywaltz/avito_advertising/cmd/advert-api/handlers"
 	"github.com/Reywaltz/avito_advertising/internal/repositories"
@@ -12,7 +11,7 @@ import (
 )
 
 func main() {
-	log, err := log.NewLogger(os.Getenv("DEV"))
+	log, err := log.NewLogger("DEV")
 	if err != nil {
 		panic("Can't init logger")
 	}

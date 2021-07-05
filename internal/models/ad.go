@@ -37,7 +37,7 @@ func (a *Ad) Bind(r *http.Request) error {
 		return errors.New("Description can't be binded")
 	}
 
-	if a.Photos == nil || len(a.Photos) < 3 {
+	if a.Photos == nil || len(a.Photos) > 3 {
 		return errors.New("Photos can't be binded")
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Reywaltz/avito_advertising/internal/models"
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 )
@@ -39,8 +40,30 @@ func (r *AdRepo) GetAll() ([]models.Ad, error) {
 	out := make([]models.Ad, 0)
 	for rows.Next() {
 		var tmp models.Ad
-		rows.Scan(&tmp.ID, &tmp.Name, &tmp.Description, &tmp.Photos, &tmp.Cost)
+		err = rows.Scan(&tmp.ID, &tmp.Name, &tmp.Description, &tmp.Photos, &tmp.Cost)
+		if err != nil {
+			return nil, err
+		}
 		out = append(out, tmp)
+	}
+
+	return out, nil
+}
+
+const (
+	CreateAdQuery = `INSERT INTO advertisement (` + AllFileds + `) VALUES ($1, $2, $3, $4, $5) returning id`
+)
+
+func (r *AdRepo) Create(newAd models.Ad) (uuid.UUID, error) {
+	row := r.DB.QueryRow(context.Background(), CreateAdQuery, &newAd.ID, &newAd.Name, &newAd.Description, &newAd.Photos, &newAd.Cost)
+	var tmp string
+	if err := row.Scan(&tmp); err != nil {
+		return uuid.Nil, err
+	}
+
+	out, err := uuid.Parse(tmp)
+	if err != nil {
+		return uuid.Nil, err
 	}
 
 	return out, nil
