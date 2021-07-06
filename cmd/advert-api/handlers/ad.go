@@ -51,13 +51,16 @@ func (h *AdHandlers) CreateAd(w http.ResponseWriter, r *http.Request) {
 	if err := newAd.Bind(r); err != nil {
 		h.log.Errorf("Can't bind ad: %s", err)
 		w.WriteHeader(http.StatusBadRequest)
+
 		return
 	}
-	newAd.ID = uuid.New().String()
+	newAd.ID = uuid.New()
 	out, err := h.adRepo.Create(newAd)
 	if err != nil {
 		h.log.Errorf("Can't insert new ad: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
+
+		return
 	}
 
 	RawJSON := []byte(`{"id": "` + out.String() + `"}`)
@@ -65,12 +68,10 @@ func (h *AdHandlers) CreateAd(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write(RawJSON)
-
 }
 
 func (h *AdHandlers) Routes(router *mux.Router) {
 	subrouter := router.PathPrefix("/api/v1").Subrouter()
 	subrouter.HandleFunc("/ads", h.GetAds).Methods("GET")
 	subrouter.HandleFunc("/ads", h.CreateAd).Methods("POST")
-
 }

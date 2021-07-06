@@ -1,8 +1,9 @@
-package log
+package log_test
 
 import (
 	"testing"
 
+	"github.com/Reywaltz/avito_advertising/pkg/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +25,7 @@ func TestDevLoggernitiaIlisation(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			_, err := NewLogger(tc.In)
+			_, err := log.NewLogger(tc.In)
 			assert.Equal(t, tc.ExpectedErr, err != nil)
 		})
 	}

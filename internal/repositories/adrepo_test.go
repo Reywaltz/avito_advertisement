@@ -1,40 +1,38 @@
-package repositories
+package repositories_test
 
 import (
 	"regexp"
 	"testing"
 
 	"github.com/Reywaltz/avito_advertising/internal/models"
+	"github.com/Reywaltz/avito_advertising/internal/repositories"
 	"github.com/google/uuid"
 	"github.com/pashagolub/pgxmock"
 	"github.com/shopspring/decimal"
-	"github.com/stretchr/testify/assert"
 )
 
-func initMockItemHandler() (pgxmock.PgxConnIface, *AdRepo, error) {
+func initMockAdRepo() (pgxmock.PgxConnIface, *repositories.AdRepo, error) {
 	mock, err := pgxmock.NewConn()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	repo := NewRepo(mock)
+	repo := repositories.NewRepo(mock)
+
 	return mock, repo, nil
 }
 
-var (
-	testCost = decimal.RequireFromString("231.1")
-)
-
 func TestAdRepositoryGetAll(t *testing.T) {
-	mock, repo, err := initMockItemHandler()
+	t.Parallel()
+	mock, repo, err := initMockAdRepo()
 	if err != nil {
 		t.Fatal(err)
 	}
 	rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost"}).
-		AddRow(uuid.New(), "Индекс", "Очень интересное объявление", []string{"1.jpg, 2.jpg, 3.jpg"}, testCost).
-		AddRow(uuid.New(), "Индекс", "Очень интересное объявление", []string{"1.jpg, 2.jpg, 3.jpg"}, testCost)
+		AddRow(uuid.New(), "Индекс", "Очень интересное объявление", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero).
+		AddRow(uuid.New(), "Индекс", "Очень интересное объявление", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero)
 
-	mock.ExpectQuery(GetAds).WillReturnRows(rows)
+	mock.ExpectQuery(repositories.GetAds).WillReturnRows(rows)
 
 	_, err = repo.GetAll()
 	if err != nil {
@@ -44,11 +42,11 @@ func TestAdRepositoryGetAll(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("Not met: %s", err)
 	}
-
 }
 
 func TestCreate(t *testing.T) {
-	mock, adRepo, err := initMockItemHandler()
+	t.Parallel()
+	mock, adRepo, err := initMockAdRepo()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,12 +62,12 @@ func TestCreate(t *testing.T) {
 
 	rows := pgxmock.NewRows([]string{"id"}).AddRow(tmp.ID.String())
 
-	mock.ExpectQuery(regexp.QuoteMeta(CreateAdQuery)).WithArgs(&tmp.ID, &tmp.Name, &tmp.Description, &tmp.Photos, &tmp.Cost).
+	mock.ExpectQuery(regexp.QuoteMeta(repositories.CreateAdQuery)).WithArgs(&tmp.ID, &tmp.Name, &tmp.Description, &tmp.Photos, &tmp.Cost).
 		WillReturnRows(rows)
 
-	q, err := adRepo.Create(tmp)
+	_, err = adRepo.Create(tmp)
 	if err != nil {
-		assert.NotNil(t, q)
+		t.Errorf("Can't insert obj: %s", err)
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {

@@ -51,7 +51,7 @@ func (r *AdRepo) GetAll() ([]models.Ad, error) {
 }
 
 const (
-	CreateAdQuery = `INSERT INTO advertisement (` + AllFileds + `) VALUES ($1, $2, $3, $4, $5) returning id`
+	CreateAdQuery = `INSERT INTO advertisement VALUES ($1, $2, $3, $4, $5) returning id`
 )
 
 func (r *AdRepo) Create(newAd models.Ad) (uuid.UUID, error) {

@@ -1,8 +1,9 @@
-package postgres
+package postgres_test
 
 import (
 	"testing"
 
+	"github.com/Reywaltz/avito_advertising/pkg/postgres"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,7 +30,7 @@ func TestDBConnection(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			_, err := NewDB(tc.In)
+			_, err := postgres.NewDB(tc.In)
 			assert.Equal(t, tc.ExpectedErr, err != nil)
 		})
 	}

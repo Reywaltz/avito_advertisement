@@ -1,4 +1,4 @@
-package models
+package models_test
 
 import (
 	"bytes"
@@ -6,10 +6,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Reywaltz/avito_advertising/internal/models"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAdBind(t *testing.T) {
+	t.Parallel()
 	type testCase struct {
 		Name        string
 		In          []byte
@@ -60,7 +62,7 @@ func TestAdBind(t *testing.T) {
 			t.Parallel()
 			reader := bytes.NewBuffer(tc.In)
 			r := httptest.NewRequest("GET", URL, reader)
-			var tmp Ad
+			var tmp models.Ad
 
 			err := tmp.Bind(r)
 			assert.Equal(t, tc.ExpectedErr, err != nil, "Binded item: %v", tmp)
