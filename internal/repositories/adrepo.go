@@ -68,3 +68,17 @@ func (r *AdRepo) Create(newAd models.Ad) (uuid.UUID, error) {
 
 	return out, nil
 }
+
+const (
+	GetOneQuery = `SELECT id, name, description, photos, cost FROM advertisement WHERE id = $1`
+)
+
+func (r *AdRepo) GetOne(reqUUID uuid.UUID) (models.Ad, error) {
+	row := r.DB.QueryRow(context.Background(), GetOneQuery, reqUUID)
+	var out models.Ad
+	if err := row.Scan(&out.ID, &out.Name, &out.Description, &out.Photos, &out.Cost); err != nil {
+		return models.Ad{}, err
+	}
+
+	return out, nil
+}

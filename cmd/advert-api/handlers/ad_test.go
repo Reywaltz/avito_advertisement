@@ -67,34 +67,38 @@ func TestAdGetAllHandler(t *testing.T) {
 		tc := tc
 		switch tc.Name {
 		case "OK get":
-			rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost"}).
-				AddRow(uuid.New(), "Индекс", "Очень интересное объявление№1", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero).
-				AddRow(uuid.New(), "Индекс", "Очень интересное объявление№2", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero)
+			t.Run(tc.Name, func(t *testing.T) {
+				rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost"}).
+					AddRow(uuid.New(), "Индекс", "Очень интересное объявление№1", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero).
+					AddRow(uuid.New(), "Индекс", "Очень интересное объявление№2", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero)
 
-			mock.ExpectQuery(GetAds).WillReturnRows(rows)
+				mock.ExpectQuery(GetAds).WillReturnRows(rows)
 
-			request := httptest.NewRequest(http.MethodGet, "/api/v1/ads", nil)
-			recorder := httptest.NewRecorder()
-			handler.ServeHTTP(recorder, request)
+				request := httptest.NewRequest(http.MethodGet, "/api/v1/ads", nil)
+				recorder := httptest.NewRecorder()
+				handler.ServeHTTP(recorder, request)
 
-			assert.Equal(t, tc.ExpectedCode, recorder.Code, "Got: %s. Expected %s", recorder.Code, http.StatusOK)
+				assert.Equal(t, tc.ExpectedCode, recorder.Code, "Got: %s. Expected %s", recorder.Code, http.StatusOK)
+			})
 
 		case "Internal error":
-			mock.ExpectQuery(regexp.QuoteMeta(`INSERT INTO`)).
-				WillReturnError(errors.New("Duplicate"))
+			t.Run(tc.Name, func(t *testing.T) {
+				mock.ExpectQuery(regexp.QuoteMeta(`SELECT *`)).
+					WillReturnError(errors.New("Can't get db conn"))
 
-			recorder := httptest.NewRecorder()
-			request := httptest.NewRequest(http.MethodPost, "/api/v1/ads", bytes.NewBuffer(tc.In))
-			handler.ServeHTTP(recorder, request)
+				recorder := httptest.NewRecorder()
+				request := httptest.NewRequest(http.MethodGet, "/api/v1/ads", bytes.NewBuffer(tc.In))
+				handler.ServeHTTP(recorder, request)
 
-			if err := mock.ExpectationsWereMet(); err != nil {
-				assert.Equal(t, tc.ExpectedCode, recorder.Code, "Got: %s. Expected %s. Err: %v", recorder.Code, http.StatusOK, err.Error())
-			}
+				if err := mock.ExpectationsWereMet(); err != nil {
+					assert.Equal(t, tc.ExpectedCode, recorder.Code, "Got: %s. Expected %s. Err: %v", recorder.Code, http.StatusOK, err.Error())
+				}
+			})
 		}
 	}
 }
 
-func TestAdCreateAllHandler(t *testing.T) {
+func TestAdCreateHandler(t *testing.T) {
 	t.Parallel()
 	mock, adHandler, err := initMockItemHandler()
 	if err != nil {
