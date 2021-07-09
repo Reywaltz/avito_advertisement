@@ -38,21 +38,12 @@ var GetAds = `SELECT ` + AllFileds + ` FROM advertisement limit ` + DefaultLimit
 
 func (r *AdRepo) GetAll(queries additions.Query) ([]models.Ad, error) {
 	limit, _ := strconv.Atoi(DefaultLimit)
-	var (
-		rows pgx.Rows
-		err  error
-	)
-	if queries.Cost != "" {
-		GetAds = fmt.Sprintf(`SELECT `+AllFileds+` FROM advertisement order by cost %s limit `+DefaultLimit+` offset $1`, queries.Cost)
-		rows, err = r.DB.Query(context.Background(), GetAds, queries.Offset*limit)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		rows, err = r.DB.Query(context.Background(), GetAds, queries.Offset*limit)
-		if err != nil {
-			return nil, err
-		}
+
+	getquery := buildSQLQuery(queries)
+
+	rows, err := r.DB.Query(context.Background(), getquery, queries.Offset*limit)
+	if err != nil {
+		return nil, err
 	}
 
 	out := make([]models.Ad, 0)
@@ -103,4 +94,25 @@ func (r *AdRepo) GetOne(reqUUID uuid.UUID) (models.Ad, error) {
 	}
 
 	return out, nil
+}
+
+func buildSQLQuery(queries additions.Query) string {
+	if queries.Cost != "" && queries.Created != "" {
+		GetAds = fmt.Sprintf(`SELECT `+AllFileds+` FROM advertisement order by cost %s, created %s limit `+DefaultLimit+` offset $1`, queries.Cost, queries.Created)
+
+		return GetAds
+	}
+
+	if queries.Cost != "" {
+		GetAds = fmt.Sprintf(`SELECT `+AllFileds+` FROM advertisement order by cost %s limit `+DefaultLimit+` offset $1`, queries.Cost)
+
+		return GetAds
+	}
+	if queries.Created != "" {
+		GetAds = fmt.Sprintf(`SELECT `+AllFileds+` FROM advertisement order by created %s limit `+DefaultLimit+` offset $1`, queries.Cost)
+
+		return GetAds
+	}
+
+	return GetAds
 }

@@ -28,6 +28,12 @@ func (q *Query) Bind(r *http.Request) error {
 	}
 	q.Cost = cost
 
+	created, err := handleCreate(query)
+	if err != nil {
+		return err
+	}
+	q.Created = created
+
 	return nil
 }
 
@@ -56,6 +62,19 @@ func handleCost(query url.Values) (string, error) {
 
 	if cost != "asc" && cost != "desc" {
 		return "", errors.New("Wrong value of cost")
+	}
+
+	return cost, nil
+}
+
+func handleCreate(query url.Values) (string, error) {
+	cost := query.Get("created")
+	if cost == "" {
+		return "", nil
+	}
+
+	if cost != "asc" && cost != "desc" {
+		return "", errors.New("Wrong value of created")
 	}
 
 	return cost, nil
