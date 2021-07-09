@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"time"
 
+	"github.com/Reywaltz/avito_advertising/cmd/advert-api/additions"
 	"github.com/Reywaltz/avito_advertising/internal/models"
 	"github.com/Reywaltz/avito_advertising/pkg/log"
 	"github.com/google/uuid"
@@ -13,7 +15,7 @@ import (
 )
 
 type AdRepository interface {
-	GetAll() ([]models.Ad, error)
+	GetAll(queries additions.Query) ([]models.Ad, error)
 	Create(models.Ad) (uuid.UUID, error)
 	GetOne(reqUUID uuid.UUID) (models.Ad, error)
 }
@@ -31,7 +33,14 @@ func NewHandlers(log log.Logger, adRepo AdRepository) (*AdHandlers, error) {
 }
 
 func (h *AdHandlers) GetAds(w http.ResponseWriter, r *http.Request) {
-	res, err := h.adRepo.GetAll()
+	var queries additions.Query
+	if err := queries.Bind(r); err != nil {
+		h.log.Errorf("Wrong query params. %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+
+		return
+	}
+	res, err := h.adRepo.GetAll(queries)
 	if err != nil {
 		h.log.Errorf("Can't get data from DB: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -95,6 +104,7 @@ func (h *AdHandlers) CreateAd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newAd.ID = uuid.New()
+	newAd.Created = time.Now().UTC()
 	out, err := h.adRepo.Create(newAd)
 	if err != nil {
 		h.log.Errorf("Can't insert new ad: %s", err)

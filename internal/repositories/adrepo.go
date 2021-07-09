@@ -2,7 +2,10 @@ package repositories
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
+	"github.com/Reywaltz/avito_advertising/cmd/advert-api/additions"
 	"github.com/Reywaltz/avito_advertising/internal/models"
 	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
@@ -26,21 +29,36 @@ func NewRepo(db PgxIface) *AdRepo {
 }
 
 const (
-	AdsFields = `name, description, photos, cost`
-	AllFileds = `id, ` + AdsFields
-	GetAds    = `SELECT ` + AllFileds + ` FROM advertisement`
+	DefaultLimit = `10`
+	AdsFields    = `name, description, photos, cost, created`
+	AllFileds    = `id, ` + AdsFields
 )
 
-func (r *AdRepo) GetAll() ([]models.Ad, error) {
-	rows, err := r.DB.Query(context.Background(), GetAds)
-	if err != nil {
-		return nil, err
+var GetAds = `SELECT ` + AllFileds + ` FROM advertisement limit ` + DefaultLimit + ` offset $1`
+
+func (r *AdRepo) GetAll(queries additions.Query) ([]models.Ad, error) {
+	limit, _ := strconv.Atoi(DefaultLimit)
+	var (
+		rows pgx.Rows
+		err  error
+	)
+	if queries.Cost != "" {
+		GetAds = fmt.Sprintf(`SELECT `+AllFileds+` FROM advertisement order by cost %s limit `+DefaultLimit+` offset $1`, queries.Cost)
+		rows, err = r.DB.Query(context.Background(), GetAds, queries.Offset*limit)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		rows, err = r.DB.Query(context.Background(), GetAds, queries.Offset*limit)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	out := make([]models.Ad, 0)
 	for rows.Next() {
 		var tmp models.Ad
-		err = rows.Scan(&tmp.ID, &tmp.Name, &tmp.Description, &tmp.Photos, &tmp.Cost)
+		err := rows.Scan(&tmp.ID, &tmp.Name, &tmp.Description, &tmp.Photos, &tmp.Cost, &tmp.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +73,9 @@ const (
 )
 
 func (r *AdRepo) Create(newAd models.Ad) (uuid.UUID, error) {
-	row := r.DB.QueryRow(context.Background(), CreateAdQuery, &newAd.ID, &newAd.Name, &newAd.Description, &newAd.Photos, &newAd.Cost)
+	row := r.DB.QueryRow(context.Background(), CreateAdQuery,
+		&newAd.ID, &newAd.Name, &newAd.Description,
+		&newAd.Photos, &newAd.Cost, &newAd.Created)
 	var tmp string
 	if err := row.Scan(&tmp); err != nil {
 		return uuid.Nil, err
@@ -70,13 +90,15 @@ func (r *AdRepo) Create(newAd models.Ad) (uuid.UUID, error) {
 }
 
 const (
-	GetOneQuery = `SELECT id, name, description, photos, cost FROM advertisement WHERE id = $1`
+	GetOneQuery = `SELECT id, name, description, photos, 
+	cost FROM advertisement WHERE id = $1`
 )
 
 func (r *AdRepo) GetOne(reqUUID uuid.UUID) (models.Ad, error) {
 	row := r.DB.QueryRow(context.Background(), GetOneQuery, reqUUID)
 	var out models.Ad
-	if err := row.Scan(&out.ID, &out.Name, &out.Description, &out.Photos, &out.Cost); err != nil {
+	if err := row.Scan(&out.ID, &out.Name, &out.Description, &out.Photos,
+		&out.Cost, out.Created); err != nil {
 		return models.Ad{}, err
 	}
 

@@ -7,7 +7,9 @@ import (
 	"net/http/httptest"
 	"regexp"
 	"testing"
+	"time"
 
+	"github.com/Reywaltz/avito_advertising/cmd/advert-api/additions"
 	"github.com/Reywaltz/avito_advertising/cmd/advert-api/handlers"
 	"github.com/Reywaltz/avito_advertising/internal/repositories"
 	"github.com/Reywaltz/avito_advertising/pkg/log"
@@ -18,9 +20,9 @@ import (
 )
 
 const (
-	AdsFields = `name, description, photos, cost`
+	AdsFields = `name, description, photos, cost, created`
 	AllFileds = `id, ` + AdsFields
-	GetAds    = `SELECT ` + AllFileds + ` FROM advertisement`
+	GetAds    = `SELECT ` + AllFileds + ` FROM advertisement limit 10 offset $1`
 )
 
 func initMockItemHandler() (pgxmock.PgxConnIface, *handlers.AdHandlers, error) {
@@ -68,13 +70,15 @@ func TestAdGetAllHandler(t *testing.T) {
 		switch tc.Name {
 		case "OK get":
 			t.Run(tc.Name, func(t *testing.T) {
-				rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost"}).
-					AddRow(uuid.New(), "Индекс", "Очень интересное объявление№1", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero).
-					AddRow(uuid.New(), "Индекс", "Очень интересное объявление№2", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero)
+				rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost", "created"}).
+					AddRow(uuid.New(), "Индекс", "Очень интересное объявление№1", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero, time.Now().UTC()).
+					AddRow(uuid.New(), "Индекс", "Очень интересное объявление№2", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero, time.Now().UTC())
 
-				mock.ExpectQuery(GetAds).WillReturnRows(rows)
+				queries := additions.Query{Offset: 0}
 
-				request := httptest.NewRequest(http.MethodGet, "/api/v1/ads", nil)
+				mock.ExpectQuery(regexp.QuoteMeta(GetAds)).WithArgs(queries.Offset).WillReturnRows(rows)
+
+				request := httptest.NewRequest(http.MethodGet, "/api/v1/ads?offset=0", nil)
 				recorder := httptest.NewRecorder()
 				handler.ServeHTTP(recorder, request)
 

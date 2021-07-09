@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -16,6 +17,7 @@ type Ad struct {
 	Description string          `json:"description"`
 	Photos      []string        `json:"photos"`
 	Cost        decimal.Decimal `json:"cost"`
+	Created     time.Time       `json:"created"`
 }
 
 func (a *Ad) Bind(r *http.Request) error {
