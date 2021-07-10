@@ -70,13 +70,14 @@ func TestAdGetAllHandler(t *testing.T) {
 		switch tc.Name {
 		case "OK get":
 			t.Run(tc.Name, func(t *testing.T) {
-				rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost", "created"}).
-					AddRow(uuid.New(), "Индекс", "Очень интересное объявление№1", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero, time.Now().UTC()).
-					AddRow(uuid.New(), "Индекс", "Очень интересное объявление№2", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero, time.Now().UTC())
+				rows := pgxmock.NewRows([]string{"name", "photo", "cost", "created"}).
+					AddRow("Очень интересное объявление№1", "1.jpg", decimal.Zero, time.Now().UTC()).
+					AddRow("Очень интересное объявление№1", "1.jpg", decimal.Zero, time.Now().UTC())
 
 				queries := additions.Query{Offset: 0}
+				query := repositories.BuildSQLQuery(queries)
 
-				mock.ExpectQuery(regexp.QuoteMeta(GetAds)).WithArgs(queries.Offset).WillReturnRows(rows)
+				mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(queries.Offset).WillReturnRows(rows)
 
 				request := httptest.NewRequest(http.MethodGet, "/api/v1/ads?offset=0", nil)
 				recorder := httptest.NewRecorder()

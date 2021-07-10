@@ -39,7 +39,7 @@ var GetAds = `SELECT ` + AllFileds + ` FROM advertisement limit ` + DefaultLimit
 func (r *AdRepo) GetAll(queries additions.Query) ([]models.AdMainPhoto, error) {
 	limit, _ := strconv.Atoi(DefaultLimit)
 
-	getquery := buildSQLQuery(queries)
+	getquery := BuildSQLQuery(queries)
 
 	rows, err := r.DB.Query(context.Background(), getquery, queries.Offset*limit)
 	if err != nil {
@@ -96,7 +96,7 @@ func (r *AdRepo) GetOne(reqUUID uuid.UUID) (models.Ad, error) {
 	return out, nil
 }
 
-func buildSQLQuery(queries additions.Query) string {
+func BuildSQLQuery(queries additions.Query) string {
 	if queries.Cost != "" && queries.Created != "" {
 		GetAds = fmt.Sprintf(`SELECT * from (SELECT name, photos[1], cost, created FROM advertisement order by cost %s) as a order by a.created %s limit `+DefaultLimit+` offset $1`, queries.Cost, queries.Created)
 

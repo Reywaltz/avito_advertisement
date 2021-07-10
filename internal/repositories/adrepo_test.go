@@ -30,13 +30,14 @@ func TestAdRepositoryGetAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rows := pgxmock.NewRows([]string{"id", "name", "desciption", "photos", "cost", "created"}).
-		AddRow(uuid.New(), "Индекс", "Очень интересное объявление", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero, time.Now().UTC()).
-		AddRow(uuid.New(), "Индекс", "Очень интересное объявление", []string{"1.jpg, 2.jpg, 3.jpg"}, decimal.Zero, time.Now().UTC())
+	rows := pgxmock.NewRows([]string{"name", "photo", "cost", "created"}).
+		AddRow("Очень интересное объявление", "1.jpg", decimal.Zero, time.Now().UTC()).
+		AddRow("Очень интересное объявление", "1.jpg", decimal.Zero, time.Now().UTC())
 
 	queries := additions.Query{Offset: 0}
+	query := repositories.BuildSQLQuery(queries)
 
-	mock.ExpectQuery(regexp.QuoteMeta(repositories.GetAds)).WithArgs(queries.Offset).WillReturnRows(rows)
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(queries.Offset).WillReturnRows(rows)
 
 	_, err = repo.GetAll(queries)
 	if err != nil {
