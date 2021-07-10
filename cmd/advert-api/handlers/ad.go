@@ -15,7 +15,7 @@ import (
 )
 
 type AdRepository interface {
-	GetAll(queries additions.Query) ([]models.Ad, error)
+	GetAll(queries additions.Query) ([]models.AdMainPhoto, error)
 	Create(models.Ad) (uuid.UUID, error)
 	GetOne(reqUUID uuid.UUID) (models.Ad, error)
 }

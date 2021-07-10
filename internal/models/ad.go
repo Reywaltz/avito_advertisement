@@ -20,6 +20,15 @@ type Ad struct {
 	Created     time.Time       `json:"created"`
 }
 
+type AdMainPhoto struct {
+	ID          uuid.UUID       `json:"-"`
+	Name        string          `json:"name"`
+	Description string          `json:"description,omitempty"`
+	Photo       string          `json:"photo"`
+	Cost        decimal.Decimal `json:"cost"`
+	Created     time.Time       `json:"-"`
+}
+
 func (a *Ad) Bind(r *http.Request) error {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

@@ -30,13 +30,13 @@ func NewRepo(db PgxIface) *AdRepo {
 
 const (
 	DefaultLimit = `10`
-	AdsFields    = `name, description, photos, cost, created`
+	AdsFields    = `name, photos, cost`
 	AllFileds    = `id, ` + AdsFields
 )
 
 var GetAds = `SELECT ` + AllFileds + ` FROM advertisement limit ` + DefaultLimit + ` offset $1`
 
-func (r *AdRepo) GetAll(queries additions.Query) ([]models.Ad, error) {
+func (r *AdRepo) GetAll(queries additions.Query) ([]models.AdMainPhoto, error) {
 	limit, _ := strconv.Atoi(DefaultLimit)
 
 	getquery := buildSQLQuery(queries)
@@ -46,10 +46,10 @@ func (r *AdRepo) GetAll(queries additions.Query) ([]models.Ad, error) {
 		return nil, err
 	}
 
-	out := make([]models.Ad, 0)
+	out := make([]models.AdMainPhoto, 0)
 	for rows.Next() {
-		var tmp models.Ad
-		err := rows.Scan(&tmp.ID, &tmp.Name, &tmp.Description, &tmp.Photos, &tmp.Cost, &tmp.Created)
+		var tmp models.AdMainPhoto
+		err := rows.Scan(&tmp.Name, &tmp.Photo, &tmp.Cost, &tmp.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -98,18 +98,18 @@ func (r *AdRepo) GetOne(reqUUID uuid.UUID) (models.Ad, error) {
 
 func buildSQLQuery(queries additions.Query) string {
 	if queries.Cost != "" && queries.Created != "" {
-		GetAds = fmt.Sprintf(`SELECT `+AllFileds+` FROM advertisement order by cost %s, created %s limit `+DefaultLimit+` offset $1`, queries.Cost, queries.Created)
+		GetAds = fmt.Sprintf(`SELECT * from (SELECT name, photos[1], cost, created FROM advertisement order by cost %s) as a order by a.created %s limit `+DefaultLimit+` offset $1`, queries.Cost, queries.Created)
 
 		return GetAds
 	}
 
 	if queries.Cost != "" {
-		GetAds = fmt.Sprintf(`SELECT `+AllFileds+` FROM advertisement order by cost %s limit `+DefaultLimit+` offset $1`, queries.Cost)
+		GetAds = fmt.Sprintf(`SELECT name, photos[1], cost, created FROM advertisement order by cost %s limit `+DefaultLimit+` offset $1`, queries.Cost)
 
 		return GetAds
 	}
 	if queries.Created != "" {
-		GetAds = fmt.Sprintf(`SELECT `+AllFileds+` FROM advertisement order by created %s limit `+DefaultLimit+` offset $1`, queries.Cost)
+		GetAds = fmt.Sprintf(`SELECT name, photos[1], cost, created FROM advertisement order by created %s limit `+DefaultLimit+` offset $1`, queries.Cost)
 
 		return GetAds
 	}
