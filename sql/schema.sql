@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS advertisement (
     name text NOT NULL,
     description text NOT NULL,
     photos text[] NOT NULL,
-    cost numeric NOT NULL
+    cost numeric NOT NULL,
+    created timestamp with time zone
 );

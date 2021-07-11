@@ -29,12 +29,11 @@ func NewRepo(db PgxIface) *AdRepo {
 }
 
 const (
-	DefaultLimit = `10`
-	AdsFields    = `name, photos, cost`
-	AllFileds    = `id, ` + AdsFields
+	DefaultLimit           = `10`
+	AdsFieldsWithMainPhoto = `name, photos[1], cost, created`
 )
 
-var GetAds = `SELECT ` + AllFileds + ` FROM advertisement limit ` + DefaultLimit + ` offset $1`
+var GetAds = `SELECT ` + AdsFieldsWithMainPhoto + ` FROM advertisement limit ` + DefaultLimit + ` offset $1`
 
 func (r *AdRepo) GetAll(queries additions.Query) ([]models.AdMainPhoto, error) {
 	limit, _ := strconv.Atoi(DefaultLimit)
@@ -60,7 +59,7 @@ func (r *AdRepo) GetAll(queries additions.Query) ([]models.AdMainPhoto, error) {
 }
 
 const (
-	CreateAdQuery = `INSERT INTO advertisement VALUES ($1, $2, $3, $4, $5) returning id`
+	CreateAdQuery = `INSERT INTO advertisement VALUES ($1, $2, $3, $4, $5, $6) returning id`
 )
 
 func (r *AdRepo) Create(newAd models.Ad) (uuid.UUID, error) {

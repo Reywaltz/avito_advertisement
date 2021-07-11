@@ -17,7 +17,7 @@ type Ad struct {
 	Description string          `json:"description"`
 	Photos      []string        `json:"photos"`
 	Cost        decimal.Decimal `json:"cost"`
-	Created     time.Time       `json:"created"`
+	Created     time.Time       `json:"-"`
 }
 
 type AdMainPhoto struct {
