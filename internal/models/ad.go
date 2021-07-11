@@ -12,7 +12,7 @@ import (
 )
 
 type Ad struct {
-	ID          uuid.UUID       `json:"id"`
+	ID          uuid.UUID       `json:"-"`
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
 	Photos      []string        `json:"photos"`
